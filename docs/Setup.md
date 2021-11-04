@@ -1067,25 +1067,6 @@ Note: modifies options in-place
 
 -   `options`  the potential setConfig parameter
 
-## reset
-
-## reset
-
-| Function | Description                  | Type        | Required | Values |
-| -------- | ---------------------------- | ----------- | -------- | ------ |
-| reset    | Resets currentConfig to conf | Put Request | Required | None   |
-
-| Parameter | Description                                                   | Type       | Required | Values                                       |
-| --------- | ------------------------------------------------------------- | ---------- | -------- | -------------------------------------------- |
-| conf      | base set of values, which currentConfig coul be **reset** to. | Dictionary | Required | Any Values, with respect to the secure Array |
-
-\*Notes :
-(default: current siteConfig ) (optional, default `getSiteConfig()`)
-
-### Parameters
-
--   `conf`  the base currentConfig to reset to (default: current siteConfig ) (optional, default `getSiteConfig()`)
-
 ## render
 
 Function that renders an svg with a graph from a chart definition. Usage example below.
@@ -1111,6 +1092,25 @@ mermaidAPI.initialize({
 -   `container`  selector to element in which a div with the graph temporarily will be inserted. In one is
     provided a hidden div will be inserted in the body of the page instead. The element will be removed when rendering is
     completed.
+
+## reset
+
+## reset
+
+| Function | Description                  | Type        | Required | Values |
+| -------- | ---------------------------- | ----------- | -------- | ------ |
+| reset    | Resets currentConfig to conf | Put Request | Required | None   |
+
+| Parameter | Description                                                   | Type       | Required | Values                                       |
+| --------- | ------------------------------------------------------------- | ---------- | -------- | -------------------------------------------- |
+| conf      | base set of values, which currentConfig coul be **reset** to. | Dictionary | Required | Any Values, with respect to the secure Array |
+
+\*Notes :
+(default: current siteConfig ) (optional, default `getSiteConfig()`)
+
+### Parameters
+
+-   `conf`  the base currentConfig to reset to (default: current siteConfig ) (optional, default `getSiteConfig()`)
 
 ## 
 

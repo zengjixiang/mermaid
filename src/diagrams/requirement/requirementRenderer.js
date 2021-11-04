@@ -8,19 +8,9 @@ import common from '../common/common';
 import { parser } from './parser/requirementDiagram';
 import requirementDb from './requirementDb';
 import markers from './requirementMarkers';
+import { getConfig } from '../../config';
 
-const conf = {};
 let relCnt = 0;
-
-export const setConf = function (cnf) {
-  if (typeof cnf === 'undefined') {
-    return;
-  }
-  const keys = Object.keys(cnf);
-  for (let i = 0; i < keys.length; i++) {
-    conf[keys[i]] = cnf[keys[i]];
-  }
-};
 
 const newRectNode = (parentNode, id) => {
   return parentNode
@@ -28,23 +18,23 @@ const newRectNode = (parentNode, id) => {
     .attr('class', 'req reqBox')
     .attr('x', 0)
     .attr('y', 0)
-    .attr('width', conf.rect_min_width + 'px')
-    .attr('height', conf.rect_min_height + 'px');
+    .attr('width', getConfig().requirement.rect_min_width + 'px')
+    .attr('height', getConfig().requirement.rect_min_height + 'px');
 };
 
 const newTitleNode = (parentNode, id, txts) => {
-  let x = conf.rect_min_width / 2;
+  let x = getConfig().requirement.rect_min_width / 2;
 
   let title = parentNode
     .append('text')
     .attr('class', 'req reqLabel reqTitle')
     .attr('id', id)
     .attr('x', x)
-    .attr('y', conf.rect_padding)
+    .attr('y', getConfig().requirement.rect_padding)
     .attr('dominant-baseline', 'hanging');
   // .attr(
   //   'style',
-  //   'font-family: ' + configApi.getConfig().fontFamily + '; font-size: ' + conf.fontSize + 'px'
+  //   'font-family: ' + configApi.getConfig().fontFamily + '; font-size: ' + getConfig().requirement.fontSize + 'px'
   // )
   let i = 0;
   txts.forEach((textStr) => {
@@ -52,29 +42,29 @@ const newTitleNode = (parentNode, id, txts) => {
       title
         .append('tspan')
         .attr('text-anchor', 'middle')
-        .attr('x', conf.rect_min_width / 2)
+        .attr('x', getConfig().requirement.rect_min_width / 2)
         .attr('dy', 0)
         .text(textStr);
     } else {
       title
         .append('tspan')
         .attr('text-anchor', 'middle')
-        .attr('x', conf.rect_min_width / 2)
-        .attr('dy', conf.line_height * 0.75)
+        .attr('x', getConfig().requirement.rect_min_width / 2)
+        .attr('dy', getConfig().requirement.line_height * 0.75)
         .text(textStr);
     }
     i++;
   });
 
-  let yPadding = 1.5 * conf.rect_padding;
-  let linePadding = i * conf.line_height * 0.75;
+  let yPadding = 1.5 * getConfig().requirement.rect_padding;
+  let linePadding = i * getConfig().requirement.line_height * 0.75;
   let totalY = yPadding + linePadding;
 
   parentNode
     .append('line')
     .attr('class', 'req-title-line')
     .attr('x1', '0')
-    .attr('x2', conf.rect_min_width)
+    .attr('x2', getConfig().requirement.rect_min_width)
     .attr('y1', totalY)
     .attr('y2', totalY);
 
@@ -89,12 +79,12 @@ const newBodyNode = (parentNode, id, txts, yStart) => {
     .append('text')
     .attr('class', 'req reqLabel')
     .attr('id', id)
-    .attr('x', conf.rect_padding)
+    .attr('x', getConfig().requirement.rect_padding)
     .attr('y', yStart)
     .attr('dominant-baseline', 'hanging');
   // .attr(
   //   'style',
-  //   'font-family: ' + configApi.getConfig().fontFamily + '; font-size: ' + conf.fontSize + 'px'
+  //   'font-family: ' + configApi.getConfig().fontFamily + '; font-size: ' + getConfig().requirement.fontSize + 'px'
   // );
 
   let currentRow = 0;
@@ -119,7 +109,11 @@ const newBodyNode = (parentNode, id, txts, yStart) => {
   });
 
   wrappedTxts.forEach((textStr) => {
-    body.append('tspan').attr('x', conf.rect_padding).attr('dy', conf.line_height).text(textStr);
+    body
+      .append('tspan')
+      .attr('x', getConfig().requirement.rect_padding)
+      .attr('dy', getConfig().requirement.line_height)
+      .text(textStr);
   });
 
   return body;
@@ -142,7 +136,7 @@ const addEdgeLabel = (parentNode, svgPath, conf, txt) => {
     .attr('y', labelPoint.y)
     .attr('text-anchor', 'middle')
     .attr('dominant-baseline', 'middle')
-    // .attr('style', 'font-family: ' + conf.fontFamily + '; font-size: ' + conf.fontSize + 'px')
+    // .attr('style', 'font-family: ' + getConfig().requirement.fontFamily + '; font-size: ' + conf.fontSize + 'px')
     .text(txt);
 
   // Figure out how big the opaque 'container' rectangle needs to be
@@ -183,14 +177,19 @@ const drawRelationshipFromLayout = function (svg, rel, g, insert) {
   if (rel.type == requirementDb.Relationships.CONTAINS) {
     svgPath.attr(
       'marker-start',
-      'url(' + common.getUrl(conf.arrowMarkerAbsolute) + '#' + rel.type + '_line_ending' + ')'
+      'url(' +
+        common.getUrl(getConfig().requirement.arrowMarkerAbsolute) +
+        '#' +
+        rel.type +
+        '_line_ending' +
+        ')'
     );
   } else {
     svgPath.attr('stroke-dasharray', '10,7');
     svgPath.attr(
       'marker-end',
       'url(' +
-        common.getUrl(conf.arrowMarkerAbsolute) +
+        common.getUrl(getConfig().requirement.arrowMarkerAbsolute) +
         '#' +
         markers.ReqMarkers.ARROW +
         '_line_ending' +
@@ -198,7 +197,7 @@ const drawRelationshipFromLayout = function (svg, rel, g, insert) {
     );
   }
 
-  addEdgeLabel(svg, svgPath, conf, `<<${rel.type}>>`);
+  addEdgeLabel(svg, svgPath, getConfig().requirement, `<<${rel.type}>>`);
 
   return;
 };
@@ -322,7 +321,7 @@ export const draw = (text, id) => {
   parser.parse(text);
 
   const svg = select(`[id='${id}']`);
-  markers.insertLineEndings(svg, conf);
+  markers.insertLineEndings(svg, getConfig().requirement);
 
   const g = new graphlib.Graph({
     multigraph: false,
@@ -330,7 +329,7 @@ export const draw = (text, id) => {
     directed: true,
   })
     .setGraph({
-      rankdir: conf.layoutDirection,
+      rankdir: getConfig().requirement.layoutDirection,
       marginx: 20,
       marginy: 20,
       nodesep: 100,
@@ -356,17 +355,16 @@ export const draw = (text, id) => {
   });
 
   // svg.attr('height', '500px');
-  const padding = conf.rect_padding;
+  const padding = getConfig().requirement.rect_padding;
   const svgBounds = svg.node().getBBox();
   const width = svgBounds.width + padding * 2;
   const height = svgBounds.height + padding * 2;
 
-  configureSvgSize(svg, height, width, conf.useMaxWidth);
+  configureSvgSize(svg, height, width, getConfig().requirement.useMaxWidth);
 
   svg.attr('viewBox', `${svgBounds.x - padding} ${svgBounds.y - padding} ${width} ${height}`);
 };
 
 export default {
-  setConf,
   draw,
 };

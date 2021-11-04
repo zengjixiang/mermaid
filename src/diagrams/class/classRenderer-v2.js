@@ -17,12 +17,6 @@ parser.yy = classDb;
 let idCache = {};
 const padding = 20;
 
-const conf = {
-  dividerMargin: 10,
-  padding: 5,
-  textHeight: 10,
-};
-
 /**
  * Function that adds the vertices found during parsing to the graph to be rendered.
  * @param vert Object containing the vertices.
@@ -195,7 +189,7 @@ export const addRelations = function (relations, g) {
     } else if (typeof relations.defaultInterpolate !== 'undefined') {
       edgeData.curve = interpolateToCurve(relations.defaultInterpolate, curveLinear);
     } else {
-      edgeData.curve = interpolateToCurve(conf.curve, curveLinear);
+      edgeData.curve = interpolateToCurve(getConfig().class.curve, curveLinear);
     }
 
     edge.text = edge.title;
@@ -239,14 +233,6 @@ const getGraphId = function (label) {
   return undefined;
 };
 
-export const setConf = function (cnf) {
-  const keys = Object.keys(cnf);
-
-  keys.forEach(function (key) {
-    conf[key] = cnf[key];
-  });
-};
-
 /**
  * Draws a flowchart in the tag with id: id based on the graph definition in text.
  * @param text
@@ -284,7 +270,7 @@ export const drawOld = function (text, id) {
   const keys = Object.keys(classes);
   for (let i = 0; i < keys.length; i++) {
     const classDef = classes[keys[i]];
-    const node = svgDraw.drawClass(diagram, classDef, conf);
+    const node = svgDraw.drawClass(diagram, classDef, getConfig().class);
     idCache[node.id] = node;
 
     // Add nodes to the graph. The first argument is the node id. The second is
@@ -329,7 +315,7 @@ export const drawOld = function (text, id) {
   g.edges().forEach(function (e) {
     if (typeof e !== 'undefined' && typeof g.edge(e) !== 'undefined') {
       log.debug('Edge ' + e.v + ' -> ' + e.w + ': ' + JSON.stringify(g.edge(e)));
-      svgDraw.drawEdge(diagram, g.edge(e), g.edge(e).relation, conf);
+      svgDraw.drawEdge(diagram, g.edge(e), g.edge(e).relation, getConfig().class);
     }
   });
 
@@ -337,7 +323,7 @@ export const drawOld = function (text, id) {
   const width = svgBounds.width + padding * 2;
   const height = svgBounds.height + padding * 2;
 
-  configureSvgSize(diagram, height, width, conf.useMaxWidth);
+  configureSvgSize(diagram, height, width, getConfig().class.useMaxWidth);
 
   // Ensure the viewBox includes the whole svgBounds area with extra space for padding
   const vBox = `${svgBounds.x - padding} ${svgBounds.y - padding} ${width} ${height}`;
@@ -363,8 +349,8 @@ export const draw = function (text, id) {
 
   const conf = getConfig().flowchart;
   log.info('config:', conf);
-  const nodeSpacing = conf.nodeSpacing || 50;
-  const rankSpacing = conf.rankSpacing || 50;
+  const nodeSpacing = getConfig().class.nodeSpacing || 50;
+  const rankSpacing = getConfig().class.rankSpacing || 50;
 
   // Create the input mermaid.graph
   const g = new graphlib.Graph({
@@ -433,7 +419,7 @@ export const draw = function (text, id) {
     `translate(${padding - g._label.marginx}, ${padding - g._label.marginy})`
   );
 
-  configureSvgSize(svg, height, width, conf.useMaxWidth);
+  configureSvgSize(svg, height, width, getConfig().class.useMaxWidth);
 
   svg.attr('viewBox', `0 0 ${width} ${height}`);
   svg
@@ -444,7 +430,7 @@ export const draw = function (text, id) {
   // flowDb.indexNodes('subGraph' + i);
 
   // Add label rects for non html labels
-  if (!conf.htmlLabels) {
+  if (!getConfig().class.htmlLabels) {
     const labels = document.querySelectorAll('[id="' + id + '"] .edgeLabel .label');
     for (let k = 0; k < labels.length; k++) {
       const label = labels[k];
@@ -499,7 +485,6 @@ export const draw = function (text, id) {
 };
 
 export default {
-  setConf,
   draw,
 };
 function getArrowMarker(type) {

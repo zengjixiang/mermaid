@@ -8,20 +8,6 @@ import { log } from '../../logger';
 import erMarkers from './erMarkers';
 import { configureSvgSize } from '../../utils';
 
-const conf = {};
-
-/**
- * Allows the top-level API module to inject config specific to this renderer,
- * storing it in the local conf object. Note that generic config still needs to be
- * retrieved using getConfig() imported from the config module
- */
-export const setConf = function (cnf) {
-  const keys = Object.keys(cnf);
-  for (let i = 0; i < keys.length; i++) {
-    conf[keys[i]] = cnf[keys[i]];
-  }
-};
-
 /**
  * Draw attributes for an entity
  * @param groupNode the svg group node for the entity
@@ -30,9 +16,9 @@ export const setConf = function (cnf) {
  * @return the bounding box of the entity, after attributes have been added
  */
 const drawAttributes = (groupNode, entityTextNode, attributes) => {
-  const heightPadding = conf.entityPadding / 3; // Padding internal to attribute boxes
-  const widthPadding = conf.entityPadding / 3; // Ditto
-  const attrFontSize = conf.fontSize * 0.85;
+  const heightPadding = getConfig().er.entityPadding / 3; // Padding internal to attribute boxes
+  const widthPadding = getConfig().er.entityPadding / 3; // Ditto
+  const attrFontSize = getConfig().er.fontSize * 0.85;
   const labelBBox = entityTextNode.node().getBBox();
   const attributeNodes = []; // Intermediate storage for attribute nodes created so that we can do a second pass
   let hasKeyType = false;
@@ -150,13 +136,16 @@ const drawAttributes = (groupNode, entityTextNode, attributes) => {
   // Calculate the new bounding box of the overall entity, now that attributes have been added
   const bBox = {
     width: Math.max(
-      conf.minEntityWidth,
-      Math.max(labelBBox.width + conf.entityPadding * 2, maxWidth + widthPadding * 4)
+      getConfig().er.minEntityWidth,
+      Math.max(labelBBox.width + getConfig().er.entityPadding * 2, maxWidth + widthPadding * 4)
     ),
     height:
       attributes.length > 0
         ? cumulativeHeight
-        : Math.max(conf.minEntityHeight, labelBBox.height + conf.entityPadding * 2),
+        : Math.max(
+            getConfig().er.minEntityHeight,
+            labelBBox.height + getConfig().er.entityPadding * 2
+          ),
   };
 
   // There might be some spare width for padding out attributes if the entity name is very long
@@ -184,9 +173,9 @@ const drawAttributes = (groupNode, entityTextNode, attributes) => {
       const typeRect = groupNode
         .insert('rect', '#' + attributeNode.tn.node().id)
         .attr('class', `er ${attribStyle}`)
-        .attr('fill', conf.fill)
+        .attr('fill', getConfig().er.fill)
         .attr('fill-opacity', '100%')
-        .attr('stroke', conf.stroke)
+        .attr('stroke', getConfig().er.stroke)
         .attr('x', 0)
         .attr('y', heightOffset)
         .attr('width', maxTypeWidth * 2 + spareWidth / 2)
@@ -202,9 +191,9 @@ const drawAttributes = (groupNode, entityTextNode, attributes) => {
       groupNode
         .insert('rect', '#' + attributeNode.nn.node().id)
         .attr('class', `er ${attribStyle}`)
-        .attr('fill', conf.fill)
+        .attr('fill', getConfig().er.fill)
         .attr('fill-opacity', '100%')
-        .attr('stroke', conf.stroke)
+        .attr('stroke', getConfig().er.stroke)
         .attr('x', `${typeRect.attr('x') + typeRect.attr('width')}`)
         .attr('y', heightOffset)
         .attr('width', maxNameWidth + widthPadding * 2 + spareWidth / 2)
@@ -221,9 +210,9 @@ const drawAttributes = (groupNode, entityTextNode, attributes) => {
         groupNode
           .insert('rect', '#' + attributeNode.kn.node().id)
           .attr('class', `er ${attribStyle}`)
-          .attr('fill', conf.fill)
+          .attr('fill', getConfig().er.fill)
           .attr('fill-opacity', '100%')
-          .attr('stroke', conf.stroke)
+          .attr('stroke', getConfig().er.stroke)
           .attr('x', `${typeRect.attr('x') + typeRect.attr('width')}`)
           .attr('y', heightOffset)
           .attr('width', maxKeyWidth + widthPadding * 2 + spareWidth / 2)
@@ -241,9 +230,9 @@ const drawAttributes = (groupNode, entityTextNode, attributes) => {
         groupNode
           .insert('rect', '#' + attributeNode.cn.node().id)
           .attr('class', `er ${attribStyle}`)
-          .attr('fill', conf.fill)
+          .attr('fill', getConfig().er.fill)
           .attr('fill-opacity', '100%')
-          .attr('stroke', conf.stroke)
+          .attr('stroke', getConfig().er.stroke)
           .attr('x', `${typeRect.attr('x') + typeRect.attr('width')}`)
           .attr('y', heightOffset)
           .attr('width', maxCommentWidth + widthPadding * 2 + spareWidth / 2)
@@ -258,7 +247,7 @@ const drawAttributes = (groupNode, entityTextNode, attributes) => {
     });
   } else {
     // Ensure the entity box is a decent size without any attributes
-    bBox.height = Math.max(conf.minEntityHeight, cumulativeHeight);
+    bBox.height = Math.max(getConfig().er.minEntityHeight, cumulativeHeight);
 
     // Position the entity label in the middle of the box
     entityTextNode.attr('transform', 'translate(' + bBox.width / 2 + ',' + bBox.height / 2 + ')');
@@ -297,7 +286,7 @@ const drawEntities = function (svgNode, entities, graph) {
       .attr('text-anchor', 'middle')
       .attr(
         'style',
-        'font-family: ' + getConfig().fontFamily + '; font-size: ' + conf.fontSize + 'px'
+        'font-family: ' + getConfig().fontFamily + '; font-size: ' + getConfig().er.fontSize + 'px'
       )
       .text(id);
 
@@ -311,9 +300,9 @@ const drawEntities = function (svgNode, entities, graph) {
     const rectNode = groupNode
       .insert('rect', '#' + textId)
       .attr('class', 'er entityBox')
-      .attr('fill', conf.fill)
+      .attr('fill', getConfig().er.fill)
       .attr('fill-opacity', '100%')
-      .attr('stroke', conf.stroke)
+      .attr('stroke', getConfig().er.stroke)
       .attr('x', 0)
       .attr('y', 0)
       .attr('width', entityWidth)
@@ -396,7 +385,7 @@ const drawRelationshipFromLayout = function (svg, rel, g, insert) {
     .insert('path', '#' + insert)
     .attr('class', 'er relationshipLine')
     .attr('d', lineFunction(edge.points))
-    .attr('stroke', conf.stroke)
+    .attr('stroke', getConfig().er.stroke)
     .attr('fill', 'none');
 
   // ...and with dashes if necessary
@@ -406,7 +395,7 @@ const drawRelationshipFromLayout = function (svg, rel, g, insert) {
 
   // TODO: Understand this better
   let url = '';
-  if (conf.arrowMarkerAbsolute) {
+  if (getConfig().er.arrowMarkerAbsolute) {
     url =
       window.location.protocol +
       '//' +
@@ -479,7 +468,7 @@ const drawRelationshipFromLayout = function (svg, rel, g, insert) {
     .attr('dominant-baseline', 'middle')
     .attr(
       'style',
-      'font-family: ' + getConfig().fontFamily + '; font-size: ' + conf.fontSize + 'px'
+      'font-family: ' + getConfig().fontFamily + '; font-size: ' + getConfig().er.fontSize + 'px'
     )
     .text(rel.roleA);
 
@@ -522,7 +511,7 @@ export const draw = function (text, id) {
   const svg = select(`[id='${id}']`);
 
   // Add cardinality marker definitions to the svg
-  erMarkers.insertMarkers(svg, conf);
+  erMarkers.insertMarkers(svg, getConfig().er);
 
   // Now we have to construct the diagram in a specific way:
   // ---
@@ -552,7 +541,7 @@ export const draw = function (text, id) {
     compound: false,
   })
     .setGraph({
-      rankdir: conf.layoutDirection,
+      rankdir: getConfig().er.layoutDirection,
       marginx: 20,
       marginy: 20,
       nodesep: 100,
@@ -582,18 +571,17 @@ export const draw = function (text, id) {
     drawRelationshipFromLayout(svg, rel, g, firstEntity);
   });
 
-  const padding = conf.diagramPadding;
+  const padding = getConfig().er.diagramPadding;
 
   const svgBounds = svg.node().getBBox();
   const width = svgBounds.width + padding * 2;
   const height = svgBounds.height + padding * 2;
 
-  configureSvgSize(svg, height, width, conf.useMaxWidth);
+  configureSvgSize(svg, height, width, getConfig().er.useMaxWidth);
 
   svg.attr('viewBox', `${svgBounds.x - padding} ${svgBounds.y - padding} ${width} ${height}`);
 }; // draw
 
 export default {
-  setConf,
   draw,
 };

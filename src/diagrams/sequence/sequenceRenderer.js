@@ -4,12 +4,10 @@ import { log } from '../../logger';
 import { parser } from './parser/sequenceDiagram';
 import common from '../common/common';
 import sequenceDb from './sequenceDb';
-import * as configApi from '../../config';
-import utils, { assignWithDepth, configureSvgSize } from '../../utils';
+import { getConfig } from '../../config';
+import utils, { configureSvgSize } from '../../utils';
 
 parser.yy = sequenceDb;
-
-let conf = {};
 
 export const bounds = {
   data: {
@@ -85,7 +83,7 @@ export const bounds = {
       stopy: undefined,
     };
     this.verticalPos = 0;
-    setConf(parser.yy.getConfig());
+    // setConf(parser.yy.getConfig());
   },
   updateVal: function (obj, key, val, fun) {
     if (typeof obj[key] === 'undefined') {
@@ -103,18 +101,33 @@ export const bounds = {
         // The loop sequenceItems is a stack so the biggest margins in the beginning of the sequenceItems
         const n = _self.sequenceItems.length - cnt + 1;
 
-        _self.updateVal(item, 'starty', starty - n * conf.boxMargin, Math.min);
-        _self.updateVal(item, 'stopy', stopy + n * conf.boxMargin, Math.max);
+        _self.updateVal(item, 'starty', starty - n * getConfig().sequence.boxMargin, Math.min);
+        _self.updateVal(item, 'stopy', stopy + n * getConfig().sequence.boxMargin, Math.max);
 
-        _self.updateVal(bounds.data, 'startx', startx - n * conf.boxMargin, Math.min);
-        _self.updateVal(bounds.data, 'stopx', stopx + n * conf.boxMargin, Math.max);
+        _self.updateVal(
+          bounds.data,
+          'startx',
+          startx - n * getConfig().sequence.boxMargin,
+          Math.min
+        );
+        _self.updateVal(bounds.data, 'stopx', stopx + n * getConfig().sequence.boxMargin, Math.max);
 
         if (!(type === 'activation')) {
-          _self.updateVal(item, 'startx', startx - n * conf.boxMargin, Math.min);
-          _self.updateVal(item, 'stopx', stopx + n * conf.boxMargin, Math.max);
+          _self.updateVal(item, 'startx', startx - n * getConfig().sequence.boxMargin, Math.min);
+          _self.updateVal(item, 'stopx', stopx + n * getConfig().sequence.boxMargin, Math.max);
 
-          _self.updateVal(bounds.data, 'starty', starty - n * conf.boxMargin, Math.min);
-          _self.updateVal(bounds.data, 'stopy', stopy + n * conf.boxMargin, Math.max);
+          _self.updateVal(
+            bounds.data,
+            'starty',
+            starty - n * getConfig().sequence.boxMargin,
+            Math.min
+          );
+          _self.updateVal(
+            bounds.data,
+            'stopy',
+            stopy + n * getConfig().sequence.boxMargin,
+            Math.max
+          );
         }
       };
     }
@@ -138,11 +151,14 @@ export const bounds = {
   newActivation: function (message, diagram, actors) {
     const actorRect = actors[message.from.actor];
     const stackedSize = actorActivations(message.from.actor).length || 0;
-    const x = actorRect.x + actorRect.width / 2 + ((stackedSize - 1) * conf.activationWidth) / 2;
+    const x =
+      actorRect.x +
+      actorRect.width / 2 +
+      ((stackedSize - 1) * getConfig().sequence.activationWidth) / 2;
     this.activations.push({
       startx: x,
       starty: this.verticalPos + 2,
-      stopx: x + conf.activationWidth,
+      stopx: x + getConfig().sequence.activationWidth,
       stopy: undefined,
       actor: message.from.actor,
       anchored: svgDraw.anchorElement(diagram),
@@ -202,13 +218,13 @@ export const bounds = {
  * @param noteModel:{x: number, y: number, message: string, width: number} - startx: x axis start position, verticalPos: y axis position, messsage: the message to be shown, width: Set this with a custom width to override the default configured width.
  */
 const drawNote = function (elem, noteModel) {
-  bounds.bumpVerticalPos(conf.boxMargin);
-  noteModel.height = conf.boxMargin;
+  bounds.bumpVerticalPos(getConfig().sequence.boxMargin);
+  noteModel.height = getConfig().sequence.boxMargin;
   noteModel.starty = bounds.getVerticalPos();
   const rect = svgDraw.getNoteRect();
   rect.x = noteModel.startx;
   rect.y = noteModel.starty;
-  rect.width = noteModel.width || conf.width;
+  rect.width = noteModel.width || getConfig().sequence.width;
   rect.class = 'note';
 
   let g = elem.append('g');
@@ -220,12 +236,12 @@ const drawNote = function (elem, noteModel) {
   textObj.dy = '1em';
   textObj.text = noteModel.message;
   textObj.class = 'noteText';
-  textObj.fontFamily = conf.noteFontFamily;
-  textObj.fontSize = conf.noteFontSize;
-  textObj.fontWeight = conf.noteFontWeight;
-  textObj.anchor = conf.noteAlign;
-  textObj.textMargin = conf.noteMargin;
-  textObj.valign = conf.noteAlign;
+  textObj.fontFamily = getConfig().sequence.noteFontFamily;
+  textObj.fontSize = getConfig().sequence.noteFontSize;
+  textObj.fontWeight = getConfig().sequence.noteFontWeight;
+  textObj.anchor = getConfig().sequence.noteAlign;
+  textObj.textMargin = getConfig().sequence.noteMargin;
+  textObj.valign = getConfig().sequence.noteAlign;
 
   let textElem = drawText(g, textObj);
 
@@ -235,10 +251,10 @@ const drawNote = function (elem, noteModel) {
       .reduce((acc, curr) => acc + curr)
   );
 
-  rectElem.attr('height', textHeight + 2 * conf.noteMargin);
-  noteModel.height += textHeight + 2 * conf.noteMargin;
-  bounds.bumpVerticalPos(textHeight + 2 * conf.noteMargin);
-  noteModel.stopy = noteModel.starty + textHeight + 2 * conf.noteMargin;
+  rectElem.attr('height', textHeight + 2 * getConfig().sequence.noteMargin);
+  noteModel.height += textHeight + 2 * getConfig().sequence.noteMargin;
+  bounds.bumpVerticalPos(textHeight + 2 * getConfig().sequence.noteMargin);
+  noteModel.stopy = noteModel.starty + textHeight + 2 * getConfig().sequence.noteMargin;
   noteModel.stopx = noteModel.startx + rect.width;
   bounds.insert(noteModel.startx, noteModel.starty, noteModel.stopx, noteModel.stopy);
   bounds.models.addNote(noteModel);
@@ -275,7 +291,7 @@ const drawMessage = function (g, msgModel) {
   bounds.bumpVerticalPos(10);
   const { startx, stopx, starty, message, type, sequenceIndex } = msgModel;
   const lines = common.splitBreaks(message).length;
-  let textDims = utils.calculateTextDimensions(message, messageFont(conf));
+  let textDims = utils.calculateTextDimensions(message, messageFont(getConfig().sequence));
   const lineHeight = textDims.height / lines;
   msgModel.height += lineHeight;
 
@@ -287,12 +303,12 @@ const drawMessage = function (g, msgModel) {
   textObj.class = 'messageText';
   textObj.dy = '1em';
   textObj.text = message;
-  textObj.fontFamily = conf.messageFontFamily;
-  textObj.fontSize = conf.messageFontSize;
-  textObj.fontWeight = conf.messageFontWeight;
-  textObj.anchor = conf.messageAlign;
-  textObj.valign = conf.messageAlign;
-  textObj.textMargin = conf.wrapPadding;
+  textObj.fontFamily = getConfig().sequence.messageFontFamily;
+  textObj.fontSize = getConfig().sequence.messageFontSize;
+  textObj.fontWeight = getConfig().sequence.messageFontWeight;
+  textObj.anchor = getConfig().sequence.messageAlign;
+  textObj.valign = getConfig().sequence.messageAlign;
+  textObj.textMargin = getConfig().sequence.wrapPadding;
   textObj.tspan = false;
 
   drawText(g, textObj);
@@ -304,17 +320,17 @@ const drawMessage = function (g, msgModel) {
   let line, lineStarty;
   if (startx === stopx) {
     lineStarty = bounds.getVerticalPos() + totalOffset;
-    if (conf.rightAngles) {
+    if (getConfig().sequence.rightAngles) {
       line = g
         .append('path')
         .attr(
           'd',
-          `M  ${startx},${lineStarty} H ${startx + Math.max(conf.width / 2, textWidth / 2)} V ${
-            lineStarty + 25
-          } H ${startx}`
+          `M  ${startx},${lineStarty} H ${
+            startx + Math.max(getConfig().sequence.width / 2, textWidth / 2)
+          } V ${lineStarty + 25} H ${startx}`
         );
     } else {
-      totalOffset += conf.boxMargin;
+      totalOffset += getConfig().sequence.boxMargin;
 
       lineStarty = bounds.getVerticalPos() + totalOffset;
       line = g
@@ -341,7 +357,7 @@ const drawMessage = function (g, msgModel) {
     }
 
     totalOffset += 30;
-    const dx = Math.max(textWidth / 2, conf.width / 2);
+    const dx = Math.max(textWidth / 2, getConfig().sequence.width / 2);
     bounds.insert(
       startx - dx,
       bounds.getVerticalPos() - 10 + totalOffset,
@@ -349,7 +365,7 @@ const drawMessage = function (g, msgModel) {
       bounds.getVerticalPos() + 30 + totalOffset
     );
   } else {
-    totalOffset += conf.boxMargin;
+    totalOffset += getConfig().sequence.boxMargin;
     lineStarty = bounds.getVerticalPos() + totalOffset;
     line = g.append('line');
     line.attr('x1', startx);
@@ -373,7 +389,7 @@ const drawMessage = function (g, msgModel) {
   }
 
   let url = '';
-  if (conf.arrowMarkerAbsolute) {
+  if (getConfig().sequence.arrowMarkerAbsolute) {
     url =
       window.location.protocol +
       '//' +
@@ -399,7 +415,7 @@ const drawMessage = function (g, msgModel) {
   }
 
   // add node number
-  if (sequenceDb.showSequenceNumbers() || conf.showSequenceNumbers) {
+  if (sequenceDb.showSequenceNumbers() || getConfig().sequence.showSequenceNumbers) {
     line.attr('marker-start', 'url(' + url + '#sequencenumber)');
     g.append('text')
       .attr('x', startx)
@@ -426,15 +442,18 @@ export const drawActors = function (diagram, actors, actorKeys, verticalPos) {
     const actor = actors[actorKeys[i]];
 
     // Add some rendering data to the object
-    actor.width = actor.width || conf.width;
-    actor.height = Math.max(actor.height || conf.height, conf.height);
-    actor.margin = actor.margin || conf.actorMargin;
+    actor.width = actor.width || getConfig().sequence.width;
+    actor.height = Math.max(
+      actor.height || getConfig().sequence.height,
+      getConfig().sequence.height
+    );
+    actor.margin = actor.margin || getConfig().sequence.actorMargin;
 
     actor.x = prevWidth + prevMargin;
     actor.y = verticalPos;
 
     // Draw the box with the attached line
-    const height = svgDraw.drawActor(diagram, actor, conf);
+    const height = svgDraw.drawActor(diagram, actor, getConfig().sequence);
     maxHeight = Math.max(maxHeight, height);
     bounds.insert(actor.x, verticalPos, actor.x + actor.width, actor.height);
 
@@ -453,7 +472,13 @@ export const drawActorsPopup = function (diagram, actors, actorKeys) {
   for (let i = 0; i < actorKeys.length; i++) {
     const actor = actors[actorKeys[i]];
     const minMenuWidth = getRequiredPopupWidth(actor);
-    var menuDimensions = svgDraw.drawPopup(diagram, actor, minMenuWidth, conf, conf.forceMenus);
+    var menuDimensions = svgDraw.drawPopup(
+      diagram,
+      actor,
+      minMenuWidth,
+      getConfig().sequence,
+      getConfig().sequence.forceMenus
+    );
     if (menuDimensions.height > maxHeight) {
       maxHeight = menuDimensions.height;
     }
@@ -465,19 +490,19 @@ export const drawActorsPopup = function (diagram, actors, actorKeys) {
   return { maxHeight: maxHeight, maxWidth: maxWidth };
 };
 
-export const setConf = function (cnf) {
-  assignWithDepth(conf, cnf);
+// export const setConf = function (cnf) {
+//   assignWithDepth(conf, cnf);
 
-  if (cnf.fontFamily) {
-    conf.actorFontFamily = conf.noteFontFamily = conf.messageFontFamily = cnf.fontFamily;
-  }
-  if (cnf.fontSize) {
-    conf.actorFontSize = conf.noteFontSize = conf.messageFontSize = cnf.fontSize;
-  }
-  if (cnf.fontWeight) {
-    conf.actorFontWeight = conf.noteFontWeight = conf.messageFontWeight = cnf.fontWeight;
-  }
-};
+//   if (cnf.fontFamily) {
+//     getConfig().sequence.actorFontFamily = getConfig().sequence.noteFontFamily = getConfig().sequence.messageFontFamily = cnf.fontFamily;
+//   }
+//   if (cnf.fontSize) {
+//     getConfig().sequence.actorFontSize = getConfig().sequence.noteFontSize = getConfig().sequence.messageFontSize = cnf.fontSize;
+//   }
+//   if (cnf.fontWeight) {
+//     getConfig().sequence.actorFontWeight = getConfig().sequence.noteFontWeight = getConfig().sequence.messageFontWeight = cnf.fontWeight;
+//   }
+// };
 
 const actorActivations = function (actor) {
   return bounds.activations.filter(function (activation) {
@@ -504,14 +529,18 @@ function adjustLoopHeightForWrap(loopWidths, msg, preMargin, postMargin, addLoop
   let heightAdjust = postMargin;
   if (msg.id && msg.message && loopWidths[msg.id]) {
     let loopWidth = loopWidths[msg.id].width;
-    let textConf = messageFont(conf);
-    msg.message = utils.wrapLabel(`[${msg.message}]`, loopWidth - 2 * conf.wrapPadding, textConf);
+    let textConf = messageFont(getConfig().sequence);
+    msg.message = utils.wrapLabel(
+      `[${msg.message}]`,
+      loopWidth - 2 * getConfig().sequence.wrapPadding,
+      textConf
+    );
     msg.width = loopWidth;
     msg.wrap = true;
 
     // const lines = common.splitBreaks(msg.message).length;
     const textDims = utils.calculateTextDimensions(msg.message, textConf);
-    const totalOffset = Math.max(textDims.height, conf.labelBoxHeight);
+    const totalOffset = Math.max(textDims.height, getConfig().sequence.labelBoxHeight);
     heightAdjust = postMargin + totalOffset;
     log.debug(`${totalOffset} - ${msg.message}`);
   }
@@ -525,9 +554,9 @@ function adjustLoopHeightForWrap(loopWidths, msg, preMargin, postMargin, addLoop
  * @param id
  */
 export const draw = function (text, id) {
-  conf = configApi.getConfig().sequence;
+  const conf = getConfig().sequence;
   parser.yy.clear();
-  parser.yy.setWrap(conf.wrap);
+  parser.yy.setWrap(getConfig().sequence.wrap);
   parser.parse(text + '\n');
   bounds.init();
   log.debug(`C:${JSON.stringify(conf, null, 2)}`);
@@ -541,7 +570,7 @@ export const draw = function (text, id) {
   const title = parser.yy.getTitle();
 
   const maxMessageWidthPerActor = getMaxMessageWidthPerActor(actors, messages);
-  conf.height = calculateActorMargins(actors, maxMessageWidthPerActor);
+  getConfig().sequence.height = calculateActorMargins(actors, maxMessageWidthPerActor);
 
   svgDraw.insertComputerIcon(diagram);
   svgDraw.insertDatabaseIcon(diagram);
@@ -593,8 +622,8 @@ export const draw = function (text, id) {
         adjustLoopHeightForWrap(
           loopWidths,
           msg,
-          conf.boxMargin,
-          conf.boxMargin + conf.boxTextMargin,
+          getConfig().sequence.boxMargin,
+          getConfig().sequence.boxMargin + getConfig().sequence.boxTextMargin,
           (message) => bounds.newLoop(message)
         );
         break;
@@ -605,8 +634,12 @@ export const draw = function (text, id) {
         bounds.models.addLoop(loopModel);
         break;
       case parser.yy.LINETYPE.RECT_START:
-        adjustLoopHeightForWrap(loopWidths, msg, conf.boxMargin, conf.boxMargin, (message) =>
-          bounds.newLoop(undefined, message.message)
+        adjustLoopHeightForWrap(
+          loopWidths,
+          msg,
+          getConfig().sequence.boxMargin,
+          getConfig().sequence.boxMargin,
+          (message) => bounds.newLoop(undefined, message.message)
         );
         break;
       case parser.yy.LINETYPE.RECT_END:
@@ -619,8 +652,8 @@ export const draw = function (text, id) {
         adjustLoopHeightForWrap(
           loopWidths,
           msg,
-          conf.boxMargin,
-          conf.boxMargin + conf.boxTextMargin,
+          getConfig().sequence.boxMargin,
+          getConfig().sequence.boxMargin + getConfig().sequence.boxTextMargin,
           (message) => bounds.newLoop(message)
         );
         break;
@@ -634,8 +667,8 @@ export const draw = function (text, id) {
         adjustLoopHeightForWrap(
           loopWidths,
           msg,
-          conf.boxMargin,
-          conf.boxMargin + conf.boxTextMargin,
+          getConfig().sequence.boxMargin,
+          getConfig().sequence.boxMargin + getConfig().sequence.boxTextMargin,
           (message) => bounds.newLoop(message)
         );
         break;
@@ -643,8 +676,8 @@ export const draw = function (text, id) {
         adjustLoopHeightForWrap(
           loopWidths,
           msg,
-          conf.boxMargin + conf.boxTextMargin,
-          conf.boxMargin,
+          getConfig().sequence.boxMargin + getConfig().sequence.boxTextMargin,
+          getConfig().sequence.boxMargin,
           (message) => bounds.addSectionToLoop(message)
         );
         break;
@@ -658,8 +691,8 @@ export const draw = function (text, id) {
         adjustLoopHeightForWrap(
           loopWidths,
           msg,
-          conf.boxMargin,
-          conf.boxMargin + conf.boxTextMargin,
+          getConfig().sequence.boxMargin,
+          getConfig().sequence.boxMargin + getConfig().sequence.boxTextMargin,
           (message) => bounds.newLoop(message)
         );
         break;
@@ -667,8 +700,8 @@ export const draw = function (text, id) {
         adjustLoopHeightForWrap(
           loopWidths,
           msg,
-          conf.boxMargin + conf.boxTextMargin,
-          conf.boxMargin,
+          getConfig().sequence.boxMargin + getConfig().sequence.boxTextMargin,
+          getConfig().sequence.boxMargin,
           (message) => bounds.addSectionToLoop(message)
         );
         break;
@@ -707,11 +740,11 @@ export const draw = function (text, id) {
     }
   });
 
-  if (conf.mirrorActors) {
+  if (getConfig().sequence.mirrorActors) {
     // Draw actors below diagram
-    bounds.bumpVerticalPos(conf.boxMargin * 2);
+    bounds.bumpVerticalPos(getConfig().sequence.boxMargin * 2);
     drawActors(diagram, actors, actorKeys, bounds.getVerticalPos());
-    bounds.bumpVerticalPos(conf.boxMargin);
+    bounds.bumpVerticalPos(getConfig().sequence.boxMargin);
     fixLifeLineHeights(diagram, bounds.getVerticalPos());
   }
 
@@ -731,9 +764,9 @@ export const draw = function (text, id) {
     boxHeight = requiredBoxSize.maxHeight;
   }
 
-  let height = boxHeight + 2 * conf.diagramMarginY;
-  if (conf.mirrorActors) {
-    height = height - conf.boxMargin + conf.bottomMarginAdj;
+  let height = boxHeight + 2 * getConfig().sequence.diagramMarginY;
+  if (getConfig().sequence.mirrorActors) {
+    height = height - getConfig().sequence.boxMargin + getConfig().sequence.bottomMarginAdj;
   }
 
   // Make sure the width of the diagram supports wide menus.
@@ -741,25 +774,25 @@ export const draw = function (text, id) {
   if (boxWidth < requiredBoxSize.maxWidth) {
     boxWidth = requiredBoxSize.maxWidth;
   }
-  const width = boxWidth + 2 * conf.diagramMarginX;
+  const width = boxWidth + 2 * getConfig().sequence.diagramMarginX;
 
   if (title) {
     diagram
       .append('text')
       .text(title)
-      .attr('x', (box.stopx - box.startx) / 2 - 2 * conf.diagramMarginX)
+      .attr('x', (box.stopx - box.startx) / 2 - 2 * getConfig().sequence.diagramMarginX)
       .attr('y', -25);
   }
 
-  configureSvgSize(diagram, height, width, conf.useMaxWidth);
+  configureSvgSize(diagram, height, width, getConfig().sequence.useMaxWidth);
 
   const extraVertForTitle = title ? 40 : 0;
   diagram.attr(
     'viewBox',
     box.startx -
-      conf.diagramMarginX +
+      getConfig().sequence.diagramMarginX +
       ' -' +
-      (conf.diagramMarginY + extraVertForTitle) +
+      (getConfig().sequence.diagramMarginY + extraVertForTitle) +
       ' ' +
       width +
       ' ' +
@@ -798,12 +831,16 @@ const getMaxMessageWidthPerActor = function (actors, messages) {
       const isNote = msg.placement !== undefined;
       const isMessage = !isNote;
 
-      const textFont = isNote ? noteFont(conf) : messageFont(conf);
+      const textFont = isNote ? noteFont(getConfig().sequence) : messageFont(getConfig().sequence);
       let wrappedMessage = msg.wrap
-        ? utils.wrapLabel(msg.message, conf.width - 2 * conf.wrapPadding, textFont)
+        ? utils.wrapLabel(
+            msg.message,
+            getConfig().sequence.width - 2 * getConfig().sequence.wrapPadding,
+            textFont
+          )
         : msg.message;
       const messageDimensions = utils.calculateTextDimensions(wrappedMessage, textFont);
-      const messageWidth = messageDimensions.width + 2 * conf.wrapPadding;
+      const messageWidth = messageDimensions.width + 2 * getConfig().sequence.wrapPadding;
 
       /*
        * The following scenarios should be supported:
@@ -875,10 +912,13 @@ const getMaxMessageWidthPerActor = function (actors, messages) {
 
 const getRequiredPopupWidth = function (actor) {
   let requiredPopupWidth = 0;
-  const textFont = actorFont(conf);
+  const textFont = actorFont(getConfig().sequence);
   for (let key in actor.links) {
     let labelDimensions = utils.calculateTextDimensions(key, textFont);
-    let labelWidth = labelDimensions.width + 2 * conf.wrapPadding + 2 * conf.boxMargin;
+    let labelWidth =
+      labelDimensions.width +
+      2 * getConfig().sequence.wrapPadding +
+      2 * getConfig().sequence.boxMargin;
     if (requiredPopupWidth < labelWidth) {
       requiredPopupWidth = labelWidth;
     }
@@ -892,7 +932,7 @@ const getRequiredPopupWidth = function (actor) {
  * actor->messageWidth map.
  *
  * An actor's margin is determined by the width of the actor, the width of the
- * largest message that originates from it, and the configured conf.actorMargin.
+ * largest message that originates from it, and the configured getConfig().sequence.actorMargin.
  *
  * @param actors - The actors map to calculate margins for
  * @param actorToMessageWidth - A map of actor key -> max message width it holds
@@ -904,16 +944,21 @@ const calculateActorMargins = function (actors, actorToMessageWidth) {
     if (actor.wrap) {
       actor.description = utils.wrapLabel(
         actor.description,
-        conf.width - 2 * conf.wrapPadding,
-        actorFont(conf)
+        getConfig().sequence.width - 2 * getConfig().sequence.wrapPadding,
+        actorFont(getConfig().sequence)
       );
     }
-    const actDims = utils.calculateTextDimensions(actor.description, actorFont(conf));
+    const actDims = utils.calculateTextDimensions(
+      actor.description,
+      actorFont(getConfig().sequence)
+    );
     actor.width = actor.wrap
-      ? conf.width
-      : Math.max(conf.width, actDims.width + 2 * conf.wrapPadding);
+      ? getConfig().sequence.width
+      : Math.max(getConfig().sequence.width, actDims.width + 2 * getConfig().sequence.wrapPadding);
 
-    actor.height = actor.wrap ? Math.max(actDims.height, conf.height) : conf.height;
+    actor.height = actor.wrap
+      ? Math.max(actDims.height, getConfig().sequence.height)
+      : getConfig().sequence.height;
     maxHeight = Math.max(maxHeight, actor.height);
   });
 
@@ -932,12 +977,13 @@ const calculateActorMargins = function (actors, actorToMessageWidth) {
     }
 
     const messageWidth = actorToMessageWidth[actorKey];
-    const actorWidth = messageWidth + conf.actorMargin - actor.width / 2 - nextActor.width / 2;
+    const actorWidth =
+      messageWidth + getConfig().sequence.actorMargin - actor.width / 2 - nextActor.width / 2;
 
-    actor.margin = Math.max(actorWidth, conf.actorMargin);
+    actor.margin = Math.max(actorWidth, getConfig().sequence.actorMargin);
   }
 
-  return Math.max(maxHeight, conf.height);
+  return Math.max(maxHeight, getConfig().sequence.height);
 };
 
 const buildNoteModel = function (msg, actors) {
@@ -946,13 +992,18 @@ const buildNoteModel = function (msg, actors) {
   let shouldWrap = msg.wrap && msg.message;
 
   let textDimensions = utils.calculateTextDimensions(
-    shouldWrap ? utils.wrapLabel(msg.message, conf.width, noteFont(conf)) : msg.message,
-    noteFont(conf)
+    shouldWrap
+      ? utils.wrapLabel(msg.message, getConfig().sequence.width, noteFont(getConfig().sequence))
+      : msg.message,
+    noteFont(getConfig().sequence)
   );
   let noteModel = {
     width: shouldWrap
-      ? conf.width
-      : Math.max(conf.width, textDimensions.width + 2 * conf.noteMargin),
+      ? getConfig().sequence.width
+      : Math.max(
+          getConfig().sequence.width,
+          textDimensions.width + 2 * getConfig().sequence.noteMargin
+        ),
     height: 0,
     startx: actors[msg.from].x,
     stopx: 0,
@@ -962,45 +1013,57 @@ const buildNoteModel = function (msg, actors) {
   };
   if (msg.placement === parser.yy.PLACEMENT.RIGHTOF) {
     noteModel.width = shouldWrap
-      ? Math.max(conf.width, textDimensions.width)
+      ? Math.max(getConfig().sequence.width, textDimensions.width)
       : Math.max(
           actors[msg.from].width / 2 + actors[msg.to].width / 2,
-          textDimensions.width + 2 * conf.noteMargin
+          textDimensions.width + 2 * getConfig().sequence.noteMargin
         );
-    noteModel.startx = startx + (actors[msg.from].width + conf.actorMargin) / 2;
+    noteModel.startx = startx + (actors[msg.from].width + getConfig().sequence.actorMargin) / 2;
   } else if (msg.placement === parser.yy.PLACEMENT.LEFTOF) {
     noteModel.width = shouldWrap
-      ? Math.max(conf.width, textDimensions.width + 2 * conf.noteMargin)
+      ? Math.max(
+          getConfig().sequence.width,
+          textDimensions.width + 2 * getConfig().sequence.noteMargin
+        )
       : Math.max(
           actors[msg.from].width / 2 + actors[msg.to].width / 2,
-          textDimensions.width + 2 * conf.noteMargin
+          textDimensions.width + 2 * getConfig().sequence.noteMargin
         );
-    noteModel.startx = startx - noteModel.width + (actors[msg.from].width - conf.actorMargin) / 2;
+    noteModel.startx =
+      startx - noteModel.width + (actors[msg.from].width - getConfig().sequence.actorMargin) / 2;
   } else if (msg.to === msg.from) {
     textDimensions = utils.calculateTextDimensions(
       shouldWrap
-        ? utils.wrapLabel(msg.message, Math.max(conf.width, actors[msg.from].width), noteFont(conf))
+        ? utils.wrapLabel(
+            msg.message,
+            Math.max(getConfig().sequence.width, actors[msg.from].width),
+            noteFont(getConfig().sequence)
+          )
         : msg.message,
-      noteFont(conf)
+      noteFont(getConfig().sequence)
     );
     noteModel.width = shouldWrap
-      ? Math.max(conf.width, actors[msg.from].width)
-      : Math.max(actors[msg.from].width, conf.width, textDimensions.width + 2 * conf.noteMargin);
+      ? Math.max(getConfig().sequence.width, actors[msg.from].width)
+      : Math.max(
+          actors[msg.from].width,
+          getConfig().sequence.width,
+          textDimensions.width + 2 * getConfig().sequence.noteMargin
+        );
     noteModel.startx = startx + (actors[msg.from].width - noteModel.width) / 2;
   } else {
     noteModel.width =
       Math.abs(startx + actors[msg.from].width / 2 - (stopx + actors[msg.to].width / 2)) +
-      conf.actorMargin;
+      getConfig().sequence.actorMargin;
     noteModel.startx =
       startx < stopx
-        ? startx + actors[msg.from].width / 2 - conf.actorMargin / 2
-        : stopx + actors[msg.to].width / 2 - conf.actorMargin / 2;
+        ? startx + actors[msg.from].width / 2 - getConfig().sequence.actorMargin / 2
+        : stopx + actors[msg.to].width / 2 - getConfig().sequence.actorMargin / 2;
   }
   if (shouldWrap) {
     noteModel.message = utils.wrapLabel(
       msg.message,
-      noteModel.width - 2 * conf.wrapPadding,
-      noteFont(conf)
+      noteModel.width - 2 * getConfig().sequence.wrapPadding,
+      noteFont(getConfig().sequence)
     );
   }
   log.debug(
@@ -1037,17 +1100,17 @@ const buildMessageModel = function (msg, actors) {
   if (msg.wrap && msg.message) {
     msg.message = utils.wrapLabel(
       msg.message,
-      Math.max(boundedWidth + 2 * conf.wrapPadding, conf.width),
-      messageFont(conf)
+      Math.max(boundedWidth + 2 * getConfig().sequence.wrapPadding, getConfig().sequence.width),
+      messageFont(getConfig().sequence)
     );
   }
-  const msgDims = utils.calculateTextDimensions(msg.message, messageFont(conf));
+  const msgDims = utils.calculateTextDimensions(msg.message, messageFont(getConfig().sequence));
 
   return {
     width: Math.max(
-      msg.wrap ? 0 : msgDims.width + 2 * conf.wrapPadding,
-      boundedWidth + 2 * conf.wrapPadding,
-      conf.width
+      msg.wrap ? 0 : msgDims.width + 2 * getConfig().sequence.wrapPadding,
+      boundedWidth + 2 * getConfig().sequence.wrapPadding,
+      getConfig().sequence.width
     ),
     height: 0,
     startx: fromBounds[fromIdx],
@@ -1103,10 +1166,12 @@ const calculateLoopBounds = function (messages, actors) {
           const actorRect = actors[msg.from ? msg.from.actor : msg.to.actor];
           const stackedSize = actorActivations(msg.from ? msg.from.actor : msg.to.actor).length;
           const x =
-            actorRect.x + actorRect.width / 2 + ((stackedSize - 1) * conf.activationWidth) / 2;
+            actorRect.x +
+            actorRect.width / 2 +
+            ((stackedSize - 1) * getConfig().sequence.activationWidth) / 2;
           const toAdd = {
             startx: x,
-            stopx: x + conf.activationWidth,
+            stopx: x + getConfig().sequence.activationWidth,
             actor: msg.from.actor,
             enabled: true,
           };
@@ -1131,7 +1196,8 @@ const calculateLoopBounds = function (messages, actors) {
         current.from = Math.min(current.from, noteModel.startx);
         current.to = Math.max(current.to, noteModel.startx + noteModel.width);
         current.width =
-          Math.max(current.width, Math.abs(current.from - current.to)) - conf.labelBoxWidth;
+          Math.max(current.width, Math.abs(current.from - current.to)) -
+          getConfig().sequence.labelBoxWidth;
       });
     } else {
       msgModel = buildMessageModel(msg, actors);
@@ -1149,11 +1215,13 @@ const calculateLoopBounds = function (messages, actors) {
             );
             current.to = Math.max(to.x + msgModel.width / 2, to.x + from.width / 2, current.to);
             current.width =
-              Math.max(current.width, Math.abs(current.to - current.from)) - conf.labelBoxWidth;
+              Math.max(current.width, Math.abs(current.to - current.from)) -
+              getConfig().sequence.labelBoxWidth;
           } else {
             current.from = Math.min(msgModel.startx, current.from);
             current.to = Math.max(msgModel.stopx, current.to);
-            current.width = Math.max(current.width, msgModel.width) - conf.labelBoxWidth;
+            current.width =
+              Math.max(current.width, msgModel.width) - getConfig().sequence.labelBoxWidth;
           }
         });
       }
@@ -1168,6 +1236,5 @@ export default {
   bounds,
   drawActors,
   drawActorsPopup,
-  setConf,
   draw,
 };

@@ -8,14 +8,6 @@ import { log } from '../../logger';
 import { configureSvgSize } from '../../utils';
 import common from '../common/common';
 
-const conf = {};
-export const setConf = function (cnf) {
-  const keys = Object.keys(cnf);
-  for (let i = 0; i < keys.length; i++) {
-    conf[keys[i]] = cnf[keys[i]];
-  }
-};
-
 let nodeDb = {};
 
 /**
@@ -315,7 +307,6 @@ export const draw = function (text, id) {
 };
 
 export default {
-  setConf,
   getClasses,
   draw,
 };

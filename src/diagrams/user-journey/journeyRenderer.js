@@ -7,14 +7,6 @@ import { configureSvgSize } from '../../utils';
 
 parser.yy = journeyDb;
 
-export const setConf = function (cnf) {
-  const keys = Object.keys(cnf);
-
-  keys.forEach(function (key) {
-    conf[key] = cnf[key];
-  });
-};
-
 const actors = {};
 
 function drawActorLegend(diagram) {
@@ -250,6 +242,5 @@ export const drawTasks = function (diagram, tasks, verticalPos) {
 };
 
 export default {
-  setConf,
   draw,
 };

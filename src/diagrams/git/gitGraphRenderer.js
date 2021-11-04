@@ -4,31 +4,10 @@ import db from './gitGraphAst';
 import gitGraphParser from './parser/gitGraph';
 import { log } from '../../logger';
 import { interpolateToCurve } from '../../utils';
+import { getConfig } from '../../config';
 
 let allCommitsDict = {};
 let branchNum;
-let config = {
-  nodeSpacing: 150,
-  nodeFillColor: 'yellow',
-  nodeStrokeWidth: 2,
-  nodeStrokeColor: 'grey',
-  lineStrokeWidth: 4,
-  branchOffset: 50,
-  lineColor: 'grey',
-  leftMargin: 50,
-  branchColors: ['#442f74', '#983351', '#609732', '#AA9A39'],
-  nodeRadius: 10,
-  nodeLabel: {
-    width: 75,
-    height: 100,
-    x: -25,
-    y: 0,
-  },
-};
-let apiConfig = {};
-export const setConf = function (c) {
-  apiConfig = c;
-};
 
 function svgCreateDefs(svg) {
   svg
@@ -36,16 +15,16 @@ function svgCreateDefs(svg) {
     .append('g')
     .attr('id', 'def-commit')
     .append('circle')
-    .attr('r', config.nodeRadius)
+    .attr('r', getConfig().git.nodeRadius)
     .attr('cx', 0)
     .attr('cy', 0);
   svg
     .select('#def-commit')
     .append('foreignObject')
-    .attr('width', config.nodeLabel.width)
-    .attr('height', config.nodeLabel.height)
-    .attr('x', config.nodeLabel.x)
-    .attr('y', config.nodeLabel.y)
+    .attr('width', getConfig().git.nodeLabel.width)
+    .attr('height', getConfig().git.nodeLabel.height)
+    .attr('x', getConfig().git.nodeLabel.x)
+    .attr('y', getConfig().git.nodeLabel.y)
     .attr('class', 'node-label')
     .attr('requiredFeatures', 'http://www.w3.org/TR/SVG11/feature#Extensibility')
     .append('p')
@@ -54,7 +33,7 @@ function svgCreateDefs(svg) {
 
 function svgDrawLine(svg, points, colorIdx, interpolate) {
   const curve = interpolateToCurve(interpolate, curveBasis);
-  const color = config.branchColors[colorIdx % config.branchColors.length];
+  const color = getConfig().git.branchColors[colorIdx % getConfig().git.branchColors.length];
   const lineGen = line()
     .x(function (d) {
       return Math.round(d.x);
@@ -68,7 +47,7 @@ function svgDrawLine(svg, points, colorIdx, interpolate) {
     .append('svg:path')
     .attr('d', lineGen(points))
     .style('stroke', color)
-    .style('stroke-width', config.lineStrokeWidth)
+    .style('stroke-width', getConfig().git.lineStrokeWidth)
     .style('fill', 'none');
 }
 
@@ -95,9 +74,9 @@ function svgDrawLineForCommits(svg, fromId, toId, direction, color) {
       // (toBbox)
       //  +--------
       //          + (fromBbox)
-      if (fromBbox.left - toBbox.left > config.nodeSpacing) {
+      if (fromBbox.left - toBbox.left > getConfig().git.nodeSpacing) {
         const lineStart = {
-          x: fromBbox.left - config.nodeSpacing,
+          x: fromBbox.left - getConfig().git.nodeSpacing,
           y: toBbox.top + toBbox.height / 2,
         };
         const lineEnd = { x: toBbox.left + toBbox.width, y: toBbox.top + toBbox.height / 2 };
@@ -106,8 +85,11 @@ function svgDrawLineForCommits(svg, fromId, toId, direction, color) {
           svg,
           [
             { x: fromBbox.left, y: fromBbox.top + fromBbox.height / 2 },
-            { x: fromBbox.left - config.nodeSpacing / 2, y: fromBbox.top + fromBbox.height / 2 },
-            { x: fromBbox.left - config.nodeSpacing / 2, y: lineStart.y },
+            {
+              x: fromBbox.left - getConfig().git.nodeSpacing / 2,
+              y: fromBbox.top + fromBbox.height / 2,
+            },
+            { x: fromBbox.left - getConfig().git.nodeSpacing / 2, y: lineStart.y },
             lineStart,
           ],
           color
@@ -121,11 +103,11 @@ function svgDrawLineForCommits(svg, fromId, toId, direction, color) {
               y: fromBbox.top + fromBbox.height / 2,
             },
             {
-              x: fromBbox.left - config.nodeSpacing / 2,
+              x: fromBbox.left - getConfig().git.nodeSpacing / 2,
               y: fromBbox.top + fromBbox.height / 2,
             },
             {
-              x: fromBbox.left - config.nodeSpacing / 2,
+              x: fromBbox.left - getConfig().git.nodeSpacing / 2,
               y: toBbox.top + toBbox.height / 2,
             },
             {
@@ -142,10 +124,10 @@ function svgDrawLineForCommits(svg, fromId, toId, direction, color) {
       //      |
       //      |
       //              +   (toBbox)
-      if (toBbox.top - fromBbox.top > config.nodeSpacing) {
+      if (toBbox.top - fromBbox.top > getConfig().git.nodeSpacing) {
         const lineStart = {
           x: toBbox.left + toBbox.width / 2,
-          y: fromBbox.top + fromBbox.height + config.nodeSpacing,
+          y: fromBbox.top + fromBbox.height + getConfig().git.nodeSpacing,
         };
         const lineEnd = { x: toBbox.left + toBbox.width / 2, y: toBbox.top };
         svgDrawLine(svg, [lineStart, lineEnd], color, 'linear');
@@ -155,9 +137,9 @@ function svgDrawLineForCommits(svg, fromId, toId, direction, color) {
             { x: fromBbox.left + fromBbox.width / 2, y: fromBbox.top + fromBbox.height },
             {
               x: fromBbox.left + fromBbox.width / 2,
-              y: fromBbox.top + fromBbox.height + config.nodeSpacing / 2,
+              y: fromBbox.top + fromBbox.height + getConfig().git.nodeSpacing / 2,
             },
-            { x: toBbox.left + toBbox.width / 2, y: lineStart.y - config.nodeSpacing / 2 },
+            { x: toBbox.left + toBbox.width / 2, y: lineStart.y - getConfig().git.nodeSpacing / 2 },
             lineStart,
           ],
           color
@@ -172,11 +154,11 @@ function svgDrawLineForCommits(svg, fromId, toId, direction, color) {
             },
             {
               x: fromBbox.left + fromBbox.width / 2,
-              y: fromBbox.top + config.nodeSpacing / 2,
+              y: fromBbox.top + getConfig().git.nodeSpacing / 2,
             },
             {
               x: toBbox.left + toBbox.width / 2,
-              y: toBbox.top - config.nodeSpacing / 2,
+              y: toBbox.top - getConfig().git.nodeSpacing / 2,
             },
             {
               x: toBbox.left + toBbox.width / 2,
@@ -217,24 +199,24 @@ function renderCommitHistory(svg, commitid, branches, direction) {
             case 'LR':
               return (
                 'translate(' +
-                (commit.seq * config.nodeSpacing + config.leftMargin) +
+                (commit.seq * getConfig().git.nodeSpacing + getConfig().git.leftMargin) +
                 ', ' +
-                branchNum * config.branchOffset +
+                branchNum * getConfig().git.branchOffset +
                 ')'
               );
             case 'BT':
               return (
                 'translate(' +
-                (branchNum * config.branchOffset + config.leftMargin) +
+                (branchNum * getConfig().git.branchOffset + getConfig().git.leftMargin) +
                 ', ' +
-                (numCommits - commit.seq) * config.nodeSpacing +
+                (numCommits - commit.seq) * getConfig().git.nodeSpacing +
                 ')'
               );
           }
         })
-        .attr('fill', config.nodeFillColor)
-        .attr('stroke', config.nodeStrokeColor)
-        .attr('stroke-width', config.nodeStrokeWidth);
+        .attr('fill', getConfig().git.nodeFillColor)
+        .attr('stroke', getConfig().git.nodeStrokeColor)
+        .attr('stroke-width', getConfig().git.nodeStrokeWidth);
 
       let branch;
       for (let branchName in branches) {
@@ -303,15 +285,14 @@ export const draw = function (txt, id, ver) {
     // Parse the graph definition
     parser.parse(txt + '\n');
 
-    config = Object.assign(config, apiConfig, db.getOptions());
-    log.debug('effective options', config);
+    log.debug('effective options', getConfig());
     const direction = db.getDirection();
     allCommitsDict = db.getCommits();
     const branches = db.getBranchesAsObjArray();
     if (direction === 'BT') {
-      config.nodeLabel.x = branches.length * config.branchOffset;
-      config.nodeLabel.width = '100%';
-      config.nodeLabel.y = -1 * 2 * config.nodeRadius;
+      getConfig().git.nodeLabel.x = branches.length * getConfig().git.branchOffset;
+      getConfig().git.nodeLabel.width = '100%';
+      getConfig().git.nodeLabel.y = -1 * 2 * getConfig().git.nodeRadius;
     }
     const svg = select(`[id="${id}"]`);
     svgCreateDefs(svg);
@@ -323,8 +304,9 @@ export const draw = function (txt, id, ver) {
       branchNum++;
     }
     svg.attr('height', function () {
-      if (direction === 'BT') return Object.keys(allCommitsDict).length * config.nodeSpacing;
-      return (branches.length + 1) * config.branchOffset;
+      if (direction === 'BT')
+        return Object.keys(allCommitsDict).length * getConfig().git.nodeSpacing;
+      return (branches.length + 1) * getConfig().git.branchOffset;
     });
   } catch (e) {
     log.error('Error while rendering gitgraph');
@@ -333,6 +315,5 @@ export const draw = function (txt, id, ver) {
 };
 
 export default {
-  setConf,
   draw,
 };

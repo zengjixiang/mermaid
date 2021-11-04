@@ -11,14 +11,6 @@ import { log } from '../../logger';
 import common, { evaluate } from '../common/common';
 import { interpolateToCurve, getStylesFromArray, configureSvgSize } from '../../utils';
 
-const conf = {};
-export const setConf = function (cnf) {
-  const keys = Object.keys(cnf);
-  for (let i = 0; i < keys.length; i++) {
-    conf[keys[i]] = cnf[keys[i]];
-  }
-};
-
 /**
  * Function that adds the vertices found during parsing to the graph to be rendered.
  * @param vert Object containing the vertices.
@@ -281,7 +273,7 @@ export const addEdges = function (edges, g) {
     } else if (typeof edges.defaultInterpolate !== 'undefined') {
       edgeData.curve = interpolateToCurve(edges.defaultInterpolate, curveLinear);
     } else {
-      edgeData.curve = interpolateToCurve(conf.curve, curveLinear);
+      edgeData.curve = interpolateToCurve(getConfig().curve, curveLinear);
     }
 
     if (typeof edge.text === 'undefined') {
@@ -341,7 +333,7 @@ export const getClasses = function (text) {
  * @param id
  */
 
-export const draw = function (text, id) {
+export const draw = function (text, id, versionStr) { // eslint-disable-line
   log.info('Drawing flowchart');
   flowDb.clear();
   flowDb.setGen('gen-2');
@@ -422,7 +414,7 @@ export const draw = function (text, id) {
   const element = select('#' + id + ' g');
   render(element, g, ['point', 'circle', 'cross'], 'flowchart', id);
 
-  const padding = conf.diagramPadding;
+  const padding = getConfig().diagramPadding;
   const svgBounds = svg.node().getBBox();
   const width = svgBounds.width + padding * 2;
   const height = svgBounds.height + padding * 2;
@@ -431,7 +423,7 @@ export const draw = function (text, id) {
     `translate(${padding - g._label.marginx}, ${padding - g._label.marginy})`
   );
 
-  configureSvgSize(svg, height, width, conf.useMaxWidth);
+  configureSvgSize(svg, height, width, getConfig().useMaxWidth);
 
   svg.attr('viewBox', `0 0 ${width} ${height}`);
   svg
@@ -442,7 +434,7 @@ export const draw = function (text, id) {
   flowDb.indexNodes('subGraph' + i);
 
   // Add label rects for non html labels
-  if (!conf.htmlLabels) {
+  if (!getConfig().htmlLabels) {
     const labels = document.querySelectorAll('[id="' + id + '"] .edgeLabel .label');
     for (let k = 0; k < labels.length; k++) {
       const label = labels[k];
@@ -500,7 +492,6 @@ export const draw = function (text, id) {
 };
 
 export default {
-  setConf,
   addVertices,
   addEdges,
   getClasses,

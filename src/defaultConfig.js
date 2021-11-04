@@ -912,6 +912,9 @@ top of the chart
      * Default value: 'dagre-d3'
      */
     defaultRenderer: 'dagre-wrapper',
+    dividerMargin: 10,
+    padding: 5,
+    textHeight: 10,
   },
   git: {
     arrowMarkerAbsolute: false,
@@ -931,6 +934,22 @@ top of the chart
      * Default value: true
      */
     useMaxWidth: true,
+    nodeSpacing: 150,
+    nodeFillColor: 'yellow',
+    nodeStrokeWidth: 2,
+    nodeStrokeColor: 'grey',
+    lineStrokeWidth: 4,
+    branchOffset: 50,
+    lineColor: 'grey',
+    leftMargin: 50,
+    branchColors: ['#442f74', '#983351', '#609732', '#AA9A39'],
+    nodeRadius: 10,
+    nodeLabel: {
+      width: 75,
+      height: 100,
+      x: -25,
+      y: 0,
+    },
   },
   state: {
     dividerMargin: 10,

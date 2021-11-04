@@ -17,43 +17,45 @@ import { select } from 'd3';
 import { compile, serialize, stringify } from 'stylis';
 import pkg from '../package.json';
 import * as configApi from './config';
-import classDb from './diagrams/class/classDb';
-import classRenderer from './diagrams/class/classRenderer';
-import classRendererV2 from './diagrams/class/classRenderer-v2';
-import classParser from './diagrams/class/parser/classDiagram';
-import erDb from './diagrams/er/erDb';
-import erRenderer from './diagrams/er/erRenderer';
-import erParser from './diagrams/er/parser/erDiagram';
-import flowDb from './diagrams/flowchart/flowDb';
-import flowRenderer from './diagrams/flowchart/flowRenderer';
-import flowRendererV2 from './diagrams/flowchart/flowRenderer-v2';
-import flowParser from './diagrams/flowchart/parser/flow';
-import ganttDb from './diagrams/gantt/ganttDb';
-import ganttRenderer from './diagrams/gantt/ganttRenderer';
-import ganttParser from './diagrams/gantt/parser/gantt';
-import gitGraphAst from './diagrams/git/gitGraphAst';
-import gitGraphRenderer from './diagrams/git/gitGraphRenderer';
-import gitGraphParser from './diagrams/git/parser/gitGraph';
-import infoDb from './diagrams/info/infoDb';
-import infoRenderer from './diagrams/info/infoRenderer';
-import infoParser from './diagrams/info/parser/info';
-import pieParser from './diagrams/pie/parser/pie';
-import pieDb from './diagrams/pie/pieDb';
-import pieRenderer from './diagrams/pie/pieRenderer';
-import requirementParser from './diagrams/requirement/parser/requirementDiagram';
-import requirementDb from './diagrams/requirement/requirementDb';
-import requirementRenderer from './diagrams/requirement/requirementRenderer';
-import sequenceParser from './diagrams/sequence/parser/sequenceDiagram';
-import sequenceDb from './diagrams/sequence/sequenceDb';
-import sequenceRenderer from './diagrams/sequence/sequenceRenderer';
-import stateParser from './diagrams/state/parser/stateDiagram';
-import stateDb from './diagrams/state/stateDb';
-import stateRenderer from './diagrams/state/stateRenderer';
-import stateRendererV2 from './diagrams/state/stateRenderer-v2';
-import journeyDb from './diagrams/user-journey/journeyDb';
-import journeyRenderer from './diagrams/user-journey/journeyRenderer';
-import journeyParser from './diagrams/user-journey/parser/journey';
 import errorRenderer from './errorRenderer';
+
+// import classDb from './diagrams/class/classDb';
+// import classRenderer from './diagrams/class/classRenderer';
+// import classRendererV2 from './diagrams/class/classRenderer-v2';
+// import classParser from './diagrams/class/parser/classDiagram';
+// import erDb from './diagrams/er/erDb';
+// import erRenderer from './diagrams/er/erRenderer';
+// import erParser from './diagrams/er/parser/erDiagram';
+// import flowDb from './diagrams/flowchart/flowDb';
+// import flowRenderer from './diagrams/flowchart/flowRenderer';
+// import flowRendererV2 from './diagrams/flowchart/flowRenderer-v2';
+// import flowParser from './diagrams/flowchart/parser/flow';
+// import ganttDb from './diagrams/gantt/ganttDb';
+// import ganttRenderer from './diagrams/gantt/ganttRenderer';
+// import ganttParser from './diagrams/gantt/parser/gantt';
+// import gitGraphAst from './diagrams/git/gitGraphAst';
+// import gitGraphRenderer from './diagrams/git/gitGraphRenderer';
+// import gitGraphParser from './diagrams/git/parser/gitGraph';
+// import infoDb from './diagrams/info/infoDb';
+// import infoRenderer from './diagrams/info/infoRenderer';
+// import infoParser from './diagrams/info/parser/info';
+// import pieParser from './diagrams/pie/parser/pie';
+// import pieDb from './diagrams/pie/pieDb';
+// import pieRenderer from './diagrams/pie/pieRenderer';
+// import requirementParser from './diagrams/requirement/parser/requirementDiagram';
+// import requirementDb from './diagrams/requirement/requirementDb';
+// import requirementRenderer from './diagrams/requirement/requirementRenderer';
+// import sequenceParser from './diagrams/sequence/parser/sequenceDiagram';
+// import sequenceDb from './diagrams/sequence/sequenceDb';
+// import sequenceRenderer from './diagrams/sequence/sequenceRenderer';
+// import stateParser from './diagrams/state/parser/stateDiagram';
+// import stateDb from './diagrams/state/stateDb';
+// import stateRenderer from './diagrams/state/stateRenderer';
+// import stateRendererV2 from './diagrams/state/stateRenderer-v2';
+// import journeyDb from './diagrams/user-journey/journeyDb';
+// import journeyRenderer from './diagrams/user-journey/journeyRenderer';
+// import journeyParser from './diagrams/user-journey/parser/journey';
+// import errorRenderer from './errorRenderer';
 
 // import * as configApi from './config';
 // // , {
@@ -67,93 +69,12 @@ import errorRenderer from './errorRenderer';
 import { log, setLogLevel } from './logger';
 import getStyles from './styles';
 import theme from './themes';
-import utils, { directiveSanitizer, assignWithDepth } from './utils';
+import utils, { directiveSanitizer } from './utils';
+import Diagram from './Diagram';
 
 function parse(text) {
-  const cnf = configApi.getConfig();
-  const graphInit = utils.detectInit(text, cnf);
-  if (graphInit) {
-    reinitialize(graphInit);
-    log.debug('reinit ', graphInit);
-  }
-  const graphType = utils.detectType(text, cnf);
-  let parser;
-
-  log.debug('Type ' + graphType);
-  switch (graphType) {
-    case 'git':
-      parser = gitGraphParser;
-      parser.parser.yy = gitGraphAst;
-      break;
-    case 'flowchart':
-      flowDb.clear();
-      parser = flowParser;
-      parser.parser.yy = flowDb;
-      break;
-    case 'flowchart-v2':
-      flowDb.clear();
-      parser = flowParser;
-      parser.parser.yy = flowDb;
-      break;
-    case 'sequence':
-      parser = sequenceParser;
-      parser.parser.yy = sequenceDb;
-      break;
-    case 'gantt':
-      parser = ganttParser;
-      parser.parser.yy = ganttDb;
-      break;
-    case 'class':
-      parser = classParser;
-      parser.parser.yy = classDb;
-      break;
-    case 'classDiagram':
-      parser = classParser;
-      parser.parser.yy = classDb;
-      break;
-    case 'state':
-      parser = stateParser;
-      parser.parser.yy = stateDb;
-      break;
-    case 'stateDiagram':
-      parser = stateParser;
-      parser.parser.yy = stateDb;
-      break;
-    case 'info':
-      log.debug('info info info');
-      parser = infoParser;
-      parser.parser.yy = infoDb;
-      break;
-    case 'pie':
-      log.debug('pie');
-      parser = pieParser;
-      parser.parser.yy = pieDb;
-      break;
-    case 'er':
-      log.debug('er');
-      parser = erParser;
-      parser.parser.yy = erDb;
-      break;
-    case 'journey':
-      log.debug('Journey');
-      parser = journeyParser;
-      parser.parser.yy = journeyDb;
-      break;
-    case 'requirement':
-    case 'requirementDiagram':
-      log.debug('RequirementDiagram');
-      parser = requirementParser;
-      parser.parser.yy = requirementDb;
-      break;
-  }
-  parser.parser.yy.graphType = graphType;
-  parser.parser.yy.parseError = (str, hash) => {
-    const error = { str, hash };
-    throw error;
-  };
-
-  parser.parse(text);
-  return parser;
+  const diagram = new Diagram(text);
+  return diagram.parser;
 }
 
 export const encodeEntities = function (text) {
@@ -226,14 +147,9 @@ const render = function (id, _txt, cb, container) {
   if (graphInit) {
     configApi.addDirective(graphInit);
   }
-  // else {
-  //   configApi.reset();
-  //   const siteConfig = configApi.getSiteConfig();
-  //   configApi.addDirective(siteConfig);
-  // }
-  // console.warn('Render fetching config');
 
   let cnf = configApi.getConfig();
+
   // Check the maximum allowed text size
   if (_txt.length > cnf.maxTextSize) {
     txt = 'graph TB;a[Maximum text size in diagram exceeded];style a fill:#faa';
@@ -271,11 +187,13 @@ const render = function (id, _txt, cb, container) {
       .append('g');
   }
 
-  window.txt = txt;
+  // window.txt = txt;
   txt = encodeEntities(txt);
 
   const element = select('#d' + id).node();
-  const graphType = utils.detectType(txt, cnf);
+  const diagram = new Diagram(txt);
+  // const graphType = utils.detectType(txt, cnf);
+  const graphType = diagram.getType();
 
   // insert inline style into svg
   const svg = element.firstChild;
@@ -296,8 +214,8 @@ const render = function (id, _txt, cb, container) {
   }
 
   // classDef
-  if (graphType === 'flowchart' || graphType === 'flowchart-v2' || graphType === 'graph') {
-    const classes = flowRenderer.getClasses(txt);
+  if (diagram.type === 'flowchart' || diagram.type === 'flowchart-v2' || diagram.type === 'graph') {
+    const classes = diagram.renderer.getClasses(txt);
     const htmlLabels = cnf.htmlLabels || cnf.flowchart.htmlLabels;
     for (const className in classes) {
       if (htmlLabels) {
@@ -332,8 +250,6 @@ const render = function (id, _txt, cb, container) {
     }
   }
 
-  // log.warn(cnf.themeVariables);
-
   const stylis = (selector, styles) => serialize(compile(`${selector}{${styles}}`), stringify);
   const rules = stylis(`#${id}`, getStyles(graphType, userStyles, cnf.themeVariables));
 
@@ -341,94 +257,79 @@ const render = function (id, _txt, cb, container) {
   style1.innerHTML = `#${id} ` + rules;
   svg.insertBefore(style1, firstChild);
 
+  if (cnf.sequenceDiagram) {
+    // backwards compatibility
+    diagram.renderer.setConf(Object.assign(cnf.sequence, cnf.sequenceDiagram));
+    console.error(
+      '`mermaid config.sequenceDiagram` has been renamed to `config.sequence`. Please update your mermaid config.'
+    );
+  }
+  // sequence TODO check
+  //   if (cnf.fontFamily) {
+  //     getConfig().sequence.actorFontFamily = getConfig().sequence.noteFontFamily = getConfig().sequence.messageFontFamily = cnf.fontFamily;
+  //   }
+  //   if (cnf.fontSize) {
+  //     getConfig().sequence.actorFontSize = getConfig().sequence.noteFontSize = getConfig().sequence.messageFontSize = cnf.fontSize;
+  //   }
+  //   if (cnf.fontWeight) {
+  //     getConfig().sequence.actorFontWeight = getConfig().sequence.noteFontWeight = getConfig().sequence.messageFontWeight = cnf.fontWeight;
+  //   }
+  // };
+
   // Verify that the generated svgs are ok before removing this
-
-  // const style2 = document.createElement('style');
-  // const cs = window.getComputedStyle(svg);
-  // style2.innerHTML = `#d${id} * {
-  //   color: ${cs.color};
-  //   // font: ${cs.font};
-  //   // font-family: Arial;
-  //   // font-size: 24px;
-  // }`;
-  // svg.insertBefore(style2, firstChild);
-
   try {
     switch (graphType) {
       case 'git':
         cnf.flowchart.arrowMarkerAbsolute = cnf.arrowMarkerAbsolute;
-        gitGraphRenderer.setConf(cnf.git);
-        gitGraphRenderer.draw(txt, id, false);
+        diagram.renderer.draw(txt, id, pkg.version);
         break;
       case 'flowchart':
         cnf.flowchart.arrowMarkerAbsolute = cnf.arrowMarkerAbsolute;
-        flowRenderer.setConf(cnf.flowchart);
-        flowRenderer.draw(txt, id, false);
+        diagram.renderer.draw(txt, id, pkg.version);
         break;
       case 'flowchart-v2':
         cnf.flowchart.arrowMarkerAbsolute = cnf.arrowMarkerAbsolute;
-        flowRendererV2.setConf(cnf.flowchart);
-        flowRendererV2.draw(txt, id, false);
+        diagram.renderer.draw(txt, id, pkg.version);
         break;
       case 'sequence':
         cnf.sequence.arrowMarkerAbsolute = cnf.arrowMarkerAbsolute;
-        if (cnf.sequenceDiagram) {
-          // backwards compatibility
-          sequenceRenderer.setConf(Object.assign(cnf.sequence, cnf.sequenceDiagram));
-          console.error(
-            '`mermaid config.sequenceDiagram` has been renamed to `config.sequence`. Please update your mermaid config.'
-          );
-        } else {
-          sequenceRenderer.setConf(cnf.sequence);
-        }
-        sequenceRenderer.draw(txt, id);
+        diagram.renderer.draw(txt, id);
         break;
       case 'gantt':
         cnf.gantt.arrowMarkerAbsolute = cnf.arrowMarkerAbsolute;
-        ganttRenderer.setConf(cnf.gantt);
-        ganttRenderer.draw(txt, id);
+        diagram.renderer.draw(txt, id);
         break;
       case 'class':
         cnf.class.arrowMarkerAbsolute = cnf.arrowMarkerAbsolute;
-        classRenderer.setConf(cnf.class);
-        classRenderer.draw(txt, id);
+        diagram.renderer.draw(txt, id);
         break;
       case 'classDiagram':
         cnf.class.arrowMarkerAbsolute = cnf.arrowMarkerAbsolute;
-        classRendererV2.setConf(cnf.class);
-        classRendererV2.draw(txt, id);
+        diagram.renderer.draw(txt, id);
         break;
       case 'state':
         cnf.class.arrowMarkerAbsolute = cnf.arrowMarkerAbsolute;
-        stateRenderer.setConf(cnf.state);
-        stateRenderer.draw(txt, id);
+        diagram.renderer.draw(txt, id);
         break;
       case 'stateDiagram':
         cnf.class.arrowMarkerAbsolute = cnf.arrowMarkerAbsolute;
-        stateRendererV2.setConf(cnf.state);
-        stateRendererV2.draw(txt, id);
+        diagram.renderer.draw(txt, id);
         break;
       case 'info':
         cnf.class.arrowMarkerAbsolute = cnf.arrowMarkerAbsolute;
-        infoRenderer.setConf(cnf.class);
-        infoRenderer.draw(txt, id, pkg.version);
+        diagram.renderer.draw(txt, id, pkg.version);
         break;
       case 'pie':
-        //cnf.class.arrowMarkerAbsolute = cnf.arrowMarkerAbsolute;
-        //pieRenderer.setConf(cnf.pie);
-        pieRenderer.draw(txt, id, pkg.version);
+        diagram.renderer.draw(txt, id, pkg.version);
         break;
       case 'er':
-        erRenderer.setConf(cnf.er);
-        erRenderer.draw(txt, id, pkg.version);
+        diagram.renderer.draw(txt, id, pkg.version);
         break;
       case 'journey':
-        journeyRenderer.setConf(cnf.journey);
-        journeyRenderer.draw(txt, id, pkg.version);
+        diagram.renderer.draw(txt, id, pkg.version);
         break;
       case 'requirement':
-        requirementRenderer.setConf(cnf.requirement);
-        requirementRenderer.draw(txt, id, pkg.version);
+        diagram.renderer.draw(txt, id, pkg.version);
         break;
     }
   } catch (e) {
@@ -440,17 +341,6 @@ const render = function (id, _txt, cb, container) {
   select(`[id="${id}"]`)
     .selectAll('foreignobject > *')
     .attr('xmlns', 'http://www.w3.org/1999/xhtml');
-
-  // if (cnf.arrowMarkerAbsolute) {
-  //   url =
-  //     window.location.protocol +
-  //     '//' +
-  //     window.location.host +
-  //     window.location.pathname +
-  //     window.location.search;
-  //   url = url.replace(/\(/g, '\\(');
-  //   url = url.replace(/\)/g, '\\)');
-  // }
 
   // Fix for when the base tag is used
   let svgCode = select('#d' + id).node().innerHTML;
@@ -468,14 +358,10 @@ const render = function (id, _txt, cb, container) {
     switch (graphType) {
       case 'flowchart':
       case 'flowchart-v2':
-        cb(svgCode, flowDb.bindFunctions);
-        break;
       case 'gantt':
-        cb(svgCode, ganttDb.bindFunctions);
-        break;
       case 'class':
       case 'classDiagram':
-        cb(svgCode, classDb.bindFunctions);
+        cb(svgCode, diagram.db.bindFunctions);
         break;
       default:
         cb(svgCode);
@@ -541,7 +427,6 @@ const handleDirective = function (p, directive, type) {
       log.debug('sanitize in handleDirective', directive.args);
       directiveSanitizer(directive.args);
       log.debug('sanitize in handleDirective (done)', directive.args);
-      reinitialize(directive.args);
       configApi.addDirective(directive.args);
       break;
     }
@@ -561,42 +446,6 @@ const handleDirective = function (p, directive, type) {
       break;
   }
 };
-
-function updateRendererConfigs(conf) {
-  // Todo remove, all diagrams should get config on demoand from the config object, no need for this
-  gitGraphRenderer.setConf(conf.git);
-  flowRenderer.setConf(conf.flowchart);
-  flowRendererV2.setConf(conf.flowchart);
-  if (typeof conf['sequenceDiagram'] !== 'undefined') {
-    sequenceRenderer.setConf(assignWithDepth(conf.sequence, conf['sequenceDiagram']));
-  }
-  sequenceRenderer.setConf(conf.sequence);
-  ganttRenderer.setConf(conf.gantt);
-  classRenderer.setConf(conf.class);
-  stateRenderer.setConf(conf.state);
-  stateRendererV2.setConf(conf.state);
-  infoRenderer.setConf(conf.class);
-  // pieRenderer.setConf(conf.class);
-  erRenderer.setConf(conf.er);
-  journeyRenderer.setConf(conf.journey);
-  requirementRenderer.setConf(conf.requirement);
-  errorRenderer.setConf(conf.class);
-}
-
-function reinitialize() {
-  // `mermaidAPI.reinitialize: v${pkg.version}`,
-  //   JSON.stringify(options),
-  //   options.themeVariables.primaryColor;
-  // // if (options.theme && theme[options.theme]) {
-  // //   options.themeVariables = theme[options.theme].getThemeVariables(options.themeVariables);
-  // // }
-  // // Set default options
-  // const config =
-  //   typeof options === 'object' ? configApi.setConfig(options) : configApi.getSiteConfig();
-  // updateRendererConfigs(config);
-  // setLogLevel(config.logLevel);
-  // log.debug('mermaidAPI.reinitialize: ', config);
-}
 
 function initialize(options) {
   // console.warn(`mermaidAPI.initialize: v${pkg.version} `, options);
@@ -624,7 +473,6 @@ function initialize(options) {
   const config =
     typeof options === 'object' ? configApi.setSiteConfig(options) : configApi.getSiteConfig();
 
-  updateRendererConfigs(config);
   setLogLevel(config.logLevel);
   // log.debug('mermaidAPI.initialize: ', config);
 }
@@ -634,7 +482,7 @@ const mermaidAPI = Object.freeze({
   parse,
   parseDirective,
   initialize,
-  reinitialize,
+  reinitialize: () => {},
   getConfig: configApi.getConfig,
   setConfig: configApi.setConfig,
   getSiteConfig: configApi.getSiteConfig,
@@ -647,7 +495,6 @@ const mermaidAPI = Object.freeze({
   },
   globalReset: () => {
     configApi.reset(configApi.defaultConfig);
-    updateRendererConfigs(configApi.getConfig());
   },
   defaultConfig: configApi.defaultConfig,
 });

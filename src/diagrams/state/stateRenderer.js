@@ -17,8 +17,6 @@ let conf;
 
 const transformationLog = {};
 
-export const setConf = function () {};
-
 // Todo optimize
 
 /**
@@ -293,6 +291,5 @@ const renderDoc = (doc, diagram, parentId, altBkg) => {
 };
 
 export default {
-  setConf,
   draw,
 };

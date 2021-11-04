@@ -6,15 +6,6 @@ import db from './infoDb';
 import infoParser from './parser/info';
 import { log } from '../../logger';
 
-const conf = {};
-export const setConf = function (cnf) {
-  const keys = Object.keys(cnf);
-
-  keys.forEach(function (key) {
-    conf[key] = cnf[key];
-  });
-};
-
 /**
  * Draws a an info picture in the tag with id: id based on the graph definition in text.
  * @param text
@@ -51,6 +42,5 @@ export const draw = (txt, id, ver) => {
 };
 
 export default {
-  setConf,
   draw,
 };

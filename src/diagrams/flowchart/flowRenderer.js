@@ -12,14 +12,6 @@ import common, { evaluate } from '../common/common';
 import { interpolateToCurve, getStylesFromArray, configureSvgSize } from '../../utils';
 import flowChartShapes from './flowChartShapes';
 
-const conf = {};
-export const setConf = function (cnf) {
-  const keys = Object.keys(cnf);
-  for (let i = 0; i < keys.length; i++) {
-    conf[keys[i]] = cnf[keys[i]];
-  }
-};
-
 /**
  * Function that adds the vertices found in the graph definition to the graph to be rendered.
  * @param vert Object containing the vertices.
@@ -217,7 +209,7 @@ export const addEdges = function (edges, g) {
     } else if (typeof edges.defaultInterpolate !== 'undefined') {
       edgeData.curve = interpolateToCurve(edges.defaultInterpolate, curveLinear);
     } else {
-      edgeData.curve = interpolateToCurve(conf.curve, curveLinear);
+      edgeData.curve = interpolateToCurve(getConfig().flowchart.curve, curveLinear);
     }
 
     if (typeof edge.text === 'undefined') {
@@ -299,9 +291,8 @@ export const draw = function (text, id) {
     dir = 'TD';
   }
 
-  const conf = getConfig().flowchart;
-  const nodeSpacing = conf.nodeSpacing || 50;
-  const rankSpacing = conf.rankSpacing || 50;
+  const nodeSpacing = getConfig().flowchart.nodeSpacing || 50;
+  const rankSpacing = getConfig().flowchart.rankSpacing || 50;
 
   // Create the input mermaid.graph
   const g = new graphlib.Graph({
@@ -410,12 +401,12 @@ export const draw = function (text, id) {
     return flowDb.getTooltip(this.id);
   });
 
-  const padding = conf.diagramPadding;
+  const padding = getConfig().flowchart.diagramPadding;
   const svgBounds = svg.node().getBBox();
   const width = svgBounds.width + padding * 2;
   const height = svgBounds.height + padding * 2;
 
-  configureSvgSize(svg, height, width, conf.useMaxWidth);
+  configureSvgSize(svg, height, width, getConfig().flowchart.useMaxWidth);
 
   // Ensure the viewBox includes the whole svgBounds area with extra space for padding
   const vBox = `${svgBounds.x - padding} ${svgBounds.y - padding} ${width} ${height}`;
@@ -451,7 +442,7 @@ export const draw = function (text, id) {
   }
 
   // Add label rects for non html labels
-  if (!evaluate(conf.htmlLabels) || true) { // eslint-disable-line
+  if (!evaluate(getConfig().flowchart.htmlLabels) || true) { // eslint-disable-line
     const labels = document.querySelectorAll('[id="' + id + '"] .edgeLabel .label');
     for (let k = 0; k < labels.length; k++) {
       const label = labels[k];
@@ -509,7 +500,6 @@ export const draw = function (text, id) {
 };
 
 export default {
-  setConf,
   addVertices,
   addEdges,
   getClasses,

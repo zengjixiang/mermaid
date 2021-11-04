@@ -1182,7 +1182,6 @@ it should handle one actor, when textPlacement is ${textPlacement}`, function() 
 sequenceDiagram
 participant Alice`;
 
-      mermaidAPI.reinitialize({sequence: { textPlacement: textPlacement}});
       mermaidAPI.parse(str);
       // renderer.setConf(mermaidAPI.getConfig().sequence);
       renderer.draw(str, 'tst');

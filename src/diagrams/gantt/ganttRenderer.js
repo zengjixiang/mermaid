@@ -17,12 +17,7 @@ import { getConfig } from '../../config';
 import { configureSvgSize } from '../../utils';
 
 parser.yy = ganttDb;
-export const setConf = function () {
-  // const keys = Object.keys(cnf);
-  // keys.forEach(function(key) {
-  //   conf[key] = cnf[key];
-  // });
-};
+
 let w;
 export const draw = function (text, id) {
   const conf = getConfig().gantt;
@@ -557,6 +552,5 @@ export const draw = function (text, id) {
 };
 
 export default {
-  setConf,
   draw,
 };
