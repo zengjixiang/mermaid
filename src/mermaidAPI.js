@@ -281,57 +281,36 @@ const render = function (id, _txt, cb, container) {
     switch (graphType) {
       case 'git':
         cnf.flowchart.arrowMarkerAbsolute = cnf.arrowMarkerAbsolute;
-        diagram.renderer.draw(txt, id, pkg.version);
         break;
       case 'flowchart':
         cnf.flowchart.arrowMarkerAbsolute = cnf.arrowMarkerAbsolute;
-        diagram.renderer.draw(txt, id, pkg.version);
         break;
       case 'flowchart-v2':
         cnf.flowchart.arrowMarkerAbsolute = cnf.arrowMarkerAbsolute;
-        diagram.renderer.draw(txt, id, pkg.version);
         break;
       case 'sequence':
         cnf.sequence.arrowMarkerAbsolute = cnf.arrowMarkerAbsolute;
-        diagram.renderer.draw(txt, id);
         break;
       case 'gantt':
         cnf.gantt.arrowMarkerAbsolute = cnf.arrowMarkerAbsolute;
-        diagram.renderer.draw(txt, id);
         break;
       case 'class':
         cnf.class.arrowMarkerAbsolute = cnf.arrowMarkerAbsolute;
-        diagram.renderer.draw(txt, id);
         break;
       case 'classDiagram':
         cnf.class.arrowMarkerAbsolute = cnf.arrowMarkerAbsolute;
-        diagram.renderer.draw(txt, id);
         break;
       case 'state':
         cnf.class.arrowMarkerAbsolute = cnf.arrowMarkerAbsolute;
-        diagram.renderer.draw(txt, id);
         break;
       case 'stateDiagram':
         cnf.class.arrowMarkerAbsolute = cnf.arrowMarkerAbsolute;
-        diagram.renderer.draw(txt, id);
         break;
       case 'info':
         cnf.class.arrowMarkerAbsolute = cnf.arrowMarkerAbsolute;
-        diagram.renderer.draw(txt, id, pkg.version);
-        break;
-      case 'pie':
-        diagram.renderer.draw(txt, id, pkg.version);
-        break;
-      case 'er':
-        diagram.renderer.draw(txt, id, pkg.version);
-        break;
-      case 'journey':
-        diagram.renderer.draw(txt, id, pkg.version);
-        break;
-      case 'requirement':
-        diagram.renderer.draw(txt, id, pkg.version);
         break;
     }
+    diagram.renderer.draw(txt, id, pkg.version);
   } catch (e) {
     // errorRenderer.setConf(cnf.class);
     errorRenderer.draw(id, pkg.version);
