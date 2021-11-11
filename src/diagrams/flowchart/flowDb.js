@@ -70,6 +70,7 @@ export const addVertex = function (_id, text, type, style, classes, dir) {
       classes: [],
     };
   }
+  log.warn(`addVertex: ${id}`);
   vertexCounter++;
   if (typeof text !== 'undefined') {
     config = configApi.getConfig();

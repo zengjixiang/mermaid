@@ -192,7 +192,6 @@ const render = function (id, _txt, cb, container) {
 
   const element = select('#d' + id).node();
   const diagram = new Diagram(txt);
-  // const graphType = utils.detectType(txt, cnf);
   const graphType = diagram.getType();
 
   // insert inline style into svg
@@ -215,7 +214,7 @@ const render = function (id, _txt, cb, container) {
 
   // classDef
   if (diagram.type === 'flowchart' || diagram.type === 'flowchart-v2' || diagram.type === 'graph') {
-    const classes = diagram.renderer.getClasses(txt);
+    const classes = diagram.db.getClasses(txt);
     const htmlLabels = cnf.htmlLabels || cnf.flowchart.htmlLabels;
     for (const className in classes) {
       if (htmlLabels) {

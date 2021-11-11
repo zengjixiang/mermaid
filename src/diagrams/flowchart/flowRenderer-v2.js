@@ -335,14 +335,14 @@ export const getClasses = function (text) {
 
 export const draw = function (text, id, versionStr) { // eslint-disable-line
   log.info('Drawing flowchart');
-  flowDb.clear();
+  // flowDb.clear();
   flowDb.setGen('gen-2');
   const parser = flow.parser;
   parser.yy = flowDb;
 
   // Parse the graph definition
   // try {
-  parser.parse(text);
+  // parser.parse(text);
   // } catch (err) {
   // log.debug('Parsing failed');
   // }
